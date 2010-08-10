@@ -1,0 +1,2 @@
+recursive-include tw2/livewidgets/templates *
+recursive-include tw2/livewidgets/static *
