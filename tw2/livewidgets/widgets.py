@@ -58,6 +58,18 @@ class UnorderedList(LiveContainer):
     child = ListItemLayout
 
 
+# utils
+def get_item_dict(widget):
+    parent = widget.parent
+    if parent:
+        if isinstance(parent, ItemLayout) and hasattr(parent, 'value'):
+            return getattr(parent.value, '__dict__', {})
+        else:
+            return get_item_dict(parent)
+    else:
+        return {}
+
+
 # Widgets
 class FieldMaker(twc.Widget):
     """Default field maker for LiveWidget objects"""
@@ -66,7 +78,6 @@ class FieldMaker(twc.Widget):
 
 class LiveWidget(twc.CompoundWidget):
     """Base class for LiveWidgets"""
-    maker = twc.Variable(default=FieldMaker())
     maker_template = twc.Param('A mako template rendering a javascript function'
         ' with prototype: function(data, id){} that returns the HTML for this '
         'field', default='mako:tw2.livewidgets.templates.default_maker')
@@ -77,18 +88,14 @@ class LiveWidget(twc.CompoundWidget):
 
     @classmethod
     def post_define(cls):
-        # set the field maker template and link it to its parent widget
-        cls.maker.template = cls.maker_template
-        cls.maker.parent = cls
+        # create a FieldMaker instance and link it to its parent widget
+        cls.maker = FieldMaker(template=cls.maker_template, parent=cls)
 
     def prepare(self):
         super(LiveWidget, self).prepare()
         
         # get the parent's value as a dictionary to use in string formatting
-        if hasattr(self.parent, 'value'):
-            self.data = getattr(self.parent.value, '__dict__', {})
-        else:
-            self.data = {}
+        self.data = get_item_dict(self)
 
 
 class Text(LiveWidget):
@@ -105,6 +112,16 @@ class Text(LiveWidget):
         
         # use widget value if "text" was not given
         self.text = self.text or self.value or ''
+
+
+class Link(LiveWidget):
+    """A link widget"""
+    template = 'mako:tw2.livewidgets.templates.link'
+    dest = twc.Param('A formatting string the will be expanded with the '
+        'widget parent\'s value attributes and used as "href" attribute, '
+        '``None`` defaults to the widget\'s value', default=None)
+    maker_template = 'mako:tw2.livewidgets.templates.link_maker'
+    children = []
 
 
 # DEBUG stuff
