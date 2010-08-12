@@ -1,6 +1,6 @@
 function(data, id) {
-    var css_class = $.sprintf('${w.parent.css_class or '' | n}', data);
-    var title = $.sprintf('${w.parent.label or '' | n}', data);
+    var css_class = $.sprintf('${w.parent.css_class | n}', data);
+    var title = $.sprintf('${w.parent.label | n}', data);
     % if w.parent.text:
         var text = $.sprintf('${w.parent.text | n}', data);
     % else:
