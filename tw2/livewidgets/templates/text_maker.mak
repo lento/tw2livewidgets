@@ -1,11 +1,13 @@
-function(data, id) {
-    var css_class = $.sprintf('${w.parent.css_class | n}', data);
-    var title = $.sprintf('${w.parent.label | n}', data);
-    % if w.parent.text:
-        var text = $.sprintf('${w.parent.text | n}', data);
+function(data) {
+    ## use widget value if "text" was not given, this is the mako + javascript
+    ## counterpart to what is done in python in the widget's "prepare()"
+    % if w.text:
+        text = $.sprintf("${w.text | n}", data);
     % else:
-        var text = data[id] ? data[id] : '';
+        text = data["${w.id}"] ? data["${w.id}"] : '';
     % endif
+    var css_class = $.sprintf("${w.css_class | n}", data);
+    var title = $.sprintf("${w.label | n}", data);
     field = '<div class="' + css_class + '" title="' + title + '">' + text + '</div>';
     return field;
 }

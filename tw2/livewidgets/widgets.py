@@ -22,48 +22,15 @@
 
 import tw2.core as twc
 
-
-# Containers
-class LiveContainer(twc.RepeatingWidget):
-    """Base class for LiveWdigets containers"""
-    child = twc.Required
-    children = twc.Required
-
-    resources = [
-        twc.JSLink(modname=__name__, filename='static/livewidgets.js'),
-        twc.JSLink(modname=__name__, filename='static/jquery.js'),
-    ]
-
-
-class ItemLayout(twc.CompoundWidget):
-    """Base class for LiveWidget layouts"""
-    children = twc.Required
-
-    def prepare(self):
-        super(ItemLayout, self).prepare()
-        
-        # set item_id
-        self.item_id = '%s-%s' % (self.parent.compound_id,
-                                                getattr(self.value, 'id', ''))
-
-
-class ListItemLayout(ItemLayout):
-    """A compund widget that wraps its children in a <li> element"""
-    template = 'mako:tw2.livewidgets.templates.list_item_layout'
-
-
-class UnorderedList(LiveContainer):
-    """A repeating widget that render its values as an <ul> element"""
-    template = 'mako:tw2.livewidgets.templates.list_unordered'
-    child = ListItemLayout
-
-
 # utils
 def get_item_dict(widget):
     parent = widget.parent
     if parent:
         if isinstance(parent, ItemLayout) and hasattr(parent, 'value'):
-            return getattr(parent.value, '__dict__', {})
+            if isinstance(parent.value, dict):
+                return parent.value
+            else:
+                return getattr(parent.value, '__dict__', {})
         else:
             return get_item_dict(parent)
     else:
@@ -71,31 +38,44 @@ def get_item_dict(widget):
 
 
 # Widgets
-class FieldMaker(twc.Widget):
-    """Default field maker for LiveWidget objects"""
-    template = 'mako:tw2.livewidgets.templates.default_maker'
-
-
-class LiveWidget(twc.CompoundWidget):
+class LiveWidget(twc.Widget):
     """Base class for LiveWidgets"""
     maker_template = twc.Param('A mako template rendering a javascript function'
-        ' with prototype: function(data, id){} that returns the HTML for this '
+        ' with prototype: function(data){} that returns the HTML for this '
         'field', default='mako:tw2.livewidgets.templates.default_maker')
     label = twc.Param('Tooltip text', default='')
     condition = twc.Param('Javascript condition', default='true')
     css_class = twc.Param('CSS class', default='')
 
-
-    @classmethod
-    def post_define(cls):
-        # create a FieldMaker instance and link it to its parent widget
-        cls.maker = FieldMaker(template=cls.maker_template, parent=cls)
-
     def prepare(self):
         super(LiveWidget, self).prepare()
-        
-        # get the parent's value as a dictionary to use in string formatting
+
+        # get the ItemLayout value as a dictionary to use in string formatting
         self.data = get_item_dict(self)
+
+    @twc.util.class_or_instance
+    def maker(self, cls, displays_on=None, **kw):
+        """Render a javascript function with prototype: function(data) {}
+        that returns the HTML for this field
+        """
+        if not self:
+            return cls.req(**kw).maker(displays_on)
+        else:
+            if not self.parent:
+                self.prepare()
+            mw = twc.core.request_local().get('middleware')
+            if displays_on is None:
+                if self.parent is None:
+                    displays_on = mw and mw.config.default_engine or 'string'
+                else:
+                    displays_on = twc.template.get_engine_name(self.parent.template, mw)
+            v = {'w':self}
+            if mw and mw.config.params_as_vars:
+                for p in self._params:
+                    if hasattr(self, p):
+                        v[p] = getattr(self, p)
+            eng = mw and mw.engines or twc.template.global_engines
+            return eng.render(self.maker_template, displays_on, v)
 
 
 class Text(LiveWidget):
@@ -105,23 +85,80 @@ class Text(LiveWidget):
         'widget parent\'s value attributes, ``None`` defaults to the widget\'s '
         'value', default=None)
     maker_template = 'mako:tw2.livewidgets.templates.text_maker'
-    children = []
 
     def prepare(self):
         super(Text, self).prepare()
-        
+
         # use widget value if "text" was not given
         self.text = self.text or self.value or ''
 
 
-class Link(LiveWidget):
-    """A link widget"""
+class Link(LiveWidget, twc.CompoundWidget):
+    """A link widget
+
+    Link is a compound widget, and can contain other widgets like ``Text`` or
+    ``Image``
+    """
     template = 'mako:tw2.livewidgets.templates.link'
     dest = twc.Param('A formatting string the will be expanded with the '
         'widget parent\'s value attributes and used as "href" attribute, '
         '``None`` defaults to the widget\'s value', default=None)
     maker_template = 'mako:tw2.livewidgets.templates.link_maker'
     children = []
+
+    def prepare(self):
+        super(Link, self).prepare()
+
+        # use widget value if "dest" was not given
+        self.dest = self.dest or self.value or ''
+
+
+class Image(LiveWidget):
+    """An image widget"""
+    template = 'mako:tw2.livewidgets.templates.image'
+    src = twc.Param('A formatting string the will be expanded with the '
+        'widget parent\'s value attributes, ``None`` defaults to the widget\'s '
+        'value', default=None)
+    maker_template = 'mako:tw2.livewidgets.templates.image_maker'
+
+    def prepare(self):
+        super(Image, self).prepare()
+
+        # use widget value if "src" was not given
+        self.src = self.src or self.value or ''
+
+
+# Layouts
+class ItemLayout(twc.CompoundWidget):
+    """Base class for LiveWidget layouts"""
+
+    def prepare(self):
+        super(ItemLayout, self).prepare()
+
+        # set item_id
+        self.item_id = '%s-%s' % (getattr(self.parent, 'compound_id', None),
+                                                getattr(self.value, 'id', None))
+
+
+class ListItemLayout(ItemLayout):
+    """A compound widget that wraps its children in a <li> element"""
+    template = 'mako:tw2.livewidgets.templates.list_item_layout'
+
+
+# Containers
+class LiveContainer(twc.RepeatingWidget):
+    """Base class for LiveWdigets containers"""
+
+    resources = [
+        twc.JSLink(modname=__name__, filename='static/livewidgets.js'),
+        twc.JSLink(modname=__name__, filename='static/jquery.js'),
+    ]
+
+
+class List(LiveContainer):
+    """A repeating widget that render its values as an <ul> element"""
+    template = 'mako:tw2.livewidgets.templates.list'
+    child = ListItemLayout
 
 
 # DEBUG stuff
