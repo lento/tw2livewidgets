@@ -147,6 +147,13 @@ class Button(LiveCompoundWidget):
         'attribute', default='')
 
 
+class Icon(LiveWidget):
+    """An icon widget"""
+    template = 'mako:tw2.livewidgets.templates.icon'
+    maker_template = 'mako:tw2.livewidgets.templates.icon_maker'
+    icon_class = twc.Param('The css class identifying this icon', default='')
+
+
 # Layouts
 class ItemLayout(twc.CompoundWidget):
     """Base class for LiveWidget layouts"""
