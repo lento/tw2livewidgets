@@ -210,9 +210,16 @@ class ListItemLayout(ItemLayout):
     template = 'mako:tw2.livewidgets.templates.list_item_layout'
 
 
+class RowLayout(ItemLayout):
+    """A compound widget that wraps its children in a <tr> element"""
+    template = 'mako:tw2.livewidgets.templates.row_layout'
+
+
 # Containers
 class LiveContainer(twc.RepeatingWidget):
     """Base class for LiveWdigets containers"""
+    container_class = twc.Param('CSS class for the container element',
+        default='')
 
     resources = [
         twc.JSLink(modname=__name__, filename='static/livewidgets.js'),
@@ -224,6 +231,13 @@ class List(LiveContainer):
     """A repeating widget that render its values as an <ul> element"""
     template = 'mako:tw2.livewidgets.templates.list'
     child = ListItemLayout
+
+
+class LiveTable(LiveContainer):
+    """A repeating widget that render its values as an <table> element"""
+    template = 'mako:tw2.livewidgets.templates.livetable'
+    child = RowLayout
+    container_class = 'livetable'
 
 
 # DEBUG stuff
