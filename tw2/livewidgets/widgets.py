@@ -109,7 +109,7 @@ class LiveCompoundWidget(LiveWidget, twc.CompoundWidget):
             if isinstance(self.data[self.key], dict):
                 for k, v in self.data[self.key].iteritems():
                     newdata['%s_%s' % (self.key, k)] = v
-            else:
+            elif hasattr(self.data[self.key], '__dict__'):
                 for k, v in self.data[self.key].__dict__.iteritems():
                     newdata['%s_%s' % (self.key, k)] = v
         self.data.update(newdata)
