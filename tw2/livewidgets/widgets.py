@@ -23,7 +23,7 @@
 import tw2.core as twc
 
 # utils
-def get_item_dict(widget):
+def get_data(widget):
     parent = widget.parent
     if parent:
         if isinstance(parent, ItemLayout) and hasattr(parent, 'value'):
@@ -32,7 +32,7 @@ def get_item_dict(widget):
             else:
                 return getattr(parent.value, '__dict__', {})
         else:
-            return get_item_dict(parent)
+            return getattr(parent, 'data', {})
     else:
         return {}
 
@@ -46,12 +46,14 @@ class LiveWidget(twc.Widget):
     label = twc.Param('Tooltip text', default='')
     condition = twc.Param('Javascript condition', default='true')
     css_class = twc.Param('CSS class', default='')
+    data = twc.Variable('A dictionary used to expand formatting strings in '
+        'templates', default = {})
 
     def prepare(self):
         super(LiveWidget, self).prepare()
 
         # get the ItemLayout value as a dictionary to use in string formatting
-        self.data = get_item_dict(self)
+        self.data = get_data(self)
 
     @twc.util.class_or_instance
     def maker(self, cls, displays_on=None, **kw):
@@ -80,15 +82,78 @@ class LiveWidget(twc.Widget):
 
 
 class LiveCompoundWidget(LiveWidget, twc.CompoundWidget):
-    """Base class for compound LiveWidgets"""
+    """Base class for compound LiveWidgets
+
+    If the ``key`` of the compound widget corresponds to an element
+    in its parent ``data``, the widget will exted ``data`` with the subelements
+    prefixing their names with its ``key``
+    """
     children = []
 
     @classmethod
     def post_define(cls):
         # a compound widget must have id=None to propagate the object or
         # dictionary received from its ItemLayout parent as "value" to its
-        # children
-        cls.id = None
+        # children, so if "id" is set we copy it to "key" (if "key" is not
+        # already set) and then reset it
+        id = getattr(cls, 'id', None)
+        cls.key = cls.key or id or ''
+        if id:
+            cls.id = None
+
+    def prepare(self):
+        # extend data with subelements
+        self.data = get_data(self)
+        newdata = {}
+        if self.key in self.data:
+            if isinstance(self.data[self.key], dict):
+                for k, v in self.data[self.key].iteritems():
+                    newdata['%s_%s' % (self.key, k)] = v
+            else:
+                for k, v in self.data[self.key].__dict__.iteritems():
+                    newdata['%s_%s' % (self.key, k)] = v
+        self.data.update(newdata)
+
+        # call CompoundWidget.prepare() to prepare children. We do this after
+        # extending "data" so children will get the new extended dictionary
+        # when calling "get_data()"
+        super(LiveCompoundWidget, self).prepare()
+
+
+class Box(LiveCompoundWidget):
+    """A simple container widget
+
+    Box is a compound widget, and can contain other widgets like ``Text``,
+    ``Image`` or ``Icon``
+    """
+    template = 'mako:tw2.livewidgets.templates.box'
+    maker_template = 'mako:tw2.livewidgets.templates.box_maker'
+
+
+class Link(LiveCompoundWidget):
+    """A link widget
+
+    Link is a compound widget, and can contain other widgets like ``Text``,
+    ``Image`` or ``Icon``
+    """
+    template = 'mako:tw2.livewidgets.templates.link'
+    maker_template = 'mako:tw2.livewidgets.templates.link_maker'
+    dest = twc.Param('A formatting string the will be expanded with the '
+        'widget\'s ItemLayout value as a dictionary and used as "href" '
+        'attribute', default='')
+
+
+class Button(LiveCompoundWidget):
+    """An overlay button widget
+
+    Button is a compound widget, and can contain other widgets like ``Text``,
+    ``Image`` or ``Icon``
+    """
+    template = 'mako:tw2.livewidgets.templates.button'
+    maker_template = 'mako:tw2.livewidgets.templates.button_maker'
+    action = twc.Param('A formatting string the will be expanded with the '
+        'widget\'s ItemLayout value as a dictionary and used as "href" '
+        'attribute', default='')
 
 
 class Text(LiveWidget):
@@ -106,19 +171,6 @@ class Text(LiveWidget):
         self.text = self.text or self.value or ''
 
 
-class Link(LiveCompoundWidget):
-    """A link widget
-
-    Link is a compound widget, and can contain other widgets like ``Text``,
-    ``Image`` or ``Icon``
-    """
-    template = 'mako:tw2.livewidgets.templates.link'
-    maker_template = 'mako:tw2.livewidgets.templates.link_maker'
-    dest = twc.Param('A formatting string the will be expanded with the '
-        'widget\'s ItemLayout value as a dictionary and used as "href" '
-        'attribute', default='')
-
-
 class Image(LiveWidget):
     """An image widget"""
     template = 'mako:tw2.livewidgets.templates.image'
@@ -132,19 +184,6 @@ class Image(LiveWidget):
 
         # use widget value if "src" was not given
         self.src = self.src or self.value or ''
-
-
-class Button(LiveCompoundWidget):
-    """An overlay button widget
-
-    Button is a compound widget, and can contain other widgets like ``Text``,
-    ``Image`` or ``Icon``
-    """
-    template = 'mako:tw2.livewidgets.templates.button'
-    maker_template = 'mako:tw2.livewidgets.templates.button_maker'
-    action = twc.Param('A formatting string the will be expanded with the '
-        'widget\'s ItemLayout value as a dictionary and used as "href" '
-        'attribute', default='')
 
 
 class Icon(LiveWidget):
