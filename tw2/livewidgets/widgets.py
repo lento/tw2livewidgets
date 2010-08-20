@@ -220,6 +220,7 @@ class LiveContainer(twc.RepeatingWidget):
     """Base class for LiveWdigets containers"""
     container_class = twc.Param('CSS class for the container element',
         default='')
+    children = twc.Required
 
     resources = [
         twc.JSLink(modname=__name__, filename='static/livewidgets.js'),
@@ -227,16 +228,19 @@ class LiveContainer(twc.RepeatingWidget):
     ]
 
 
-class List(LiveContainer):
+class LiveList(LiveContainer):
     """A repeating widget that render its values as an <ul> element"""
-    template = 'mako:tw2.livewidgets.templates.list'
+    template = 'mako:tw2.livewidgets.templates.livelist'
     child = ListItemLayout
+
+    container_class = 'livelist'
 
 
 class LiveTable(LiveContainer):
     """A repeating widget that render its values as an <table> element"""
     template = 'mako:tw2.livewidgets.templates.livetable'
     child = RowLayout
+
     container_class = 'livetable'
 
 
