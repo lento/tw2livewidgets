@@ -28,7 +28,8 @@ class LiveWidget(twc.Widget):
     maker_template = twc.Param('A mako template rendering a javascript function'
         ' with prototype: ``function(data){}`` that returns the HTML for this '
         'field', default='mako:tw2.livewidgets.templates.default_maker')
-    label = twc.Param('Tooltip text', default='')
+    label = twc.Param('Widget label', default='')
+    help_text = twc.Param('Tooltip text', default='')
     update_condition = twc.Param('Javascript condition used to filter updates',
         default='true')
     css_class = twc.Param('Custom CSS class', default='')

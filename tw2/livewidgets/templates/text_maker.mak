@@ -7,7 +7,7 @@ function(data) {
         var text = data['${w.id}'] ? data['${w.id}'] : '';
     % endif
     var css_class = $.sprintf('${w.css_class | n}', data);
-    var title = $.sprintf('${w.label | n}', data);
+    var title = $.sprintf('${w.help_text | n}', data);
     var field = '<div class="${w.widget_class} ' + css_class + '" title="' + title + '">' + text + '</div>';
     return field;
 }

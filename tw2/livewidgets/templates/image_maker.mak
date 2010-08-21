@@ -6,7 +6,7 @@ function(data) {
     % else:
         src = data['${w.id}'] ? data['${w.id}'] : '';
     % endif
-    title = $.sprintf('${w.label | n}', data);
+    title = $.sprintf('${w.help_text | n}', data);
     var css_class = $.sprintf('${w.css_class | n}', data);
     var field = '<img src="' + src + '" class="${w.widget_class} ' + field_class + '"  title="' + title + '"></img>';
     return field;
