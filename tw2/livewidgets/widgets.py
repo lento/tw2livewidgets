@@ -161,7 +161,7 @@ class Text(LiveWidget):
         super(Text, self).prepare()
 
         # use widget value if "text" was not given
-        self.text = self.text or self.value or ''
+        self.text = self.text or str(self.value) or ''
 
 
 class Image(LiveWidget):
