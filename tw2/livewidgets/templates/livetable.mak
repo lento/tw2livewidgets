@@ -24,13 +24,13 @@
 </script>
 
 <table id="${w.compound_id}" class="${w.container_class or ''}">
-##    <thead class="${not w.show_headers and 'hidden' or ''}">
-##        <tr>
-##            % for field in fields:
-##                <th>${field.show_header and field.id or ''}</th>
-##            % endfor
-##        </tr>
-##    </thead>
+    <thead class="${not w.show_headers and 'hidden' or ''}">
+        <tr>
+            % for field in w.child.children:
+                <th>${field.show_header and field.id or ''}</th>
+            % endfor
+        </tr>
+    </thead>
     <tbody>
         % for row in w.children:
             ${row.display() | n}

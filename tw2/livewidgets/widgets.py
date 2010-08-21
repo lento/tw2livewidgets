@@ -44,8 +44,10 @@ class LiveWidget(twc.Widget):
         ' with prototype: ``function(data){}`` that returns the HTML for this '
         'field', default='mako:tw2.livewidgets.templates.default_maker')
     label = twc.Param('Tooltip text', default='')
-    condition = twc.Param('Javascript condition', default='true')
+    update_condition = twc.Param('Javascript condition used to filter updates',
+        default='true')
     css_class = twc.Param('CSS class', default='')
+    show_header = twc.Param('Show widget id in headers', default=True)
     data = twc.Variable('A dictionary used to expand formatting strings in '
         'templates', default = {})
 
@@ -238,6 +240,8 @@ class LiveList(LiveContainer):
 
 class LiveTable(LiveContainer):
     """A repeating widget that render its values as an <table> element"""
+    show_headers = twc.Param('Show table headers', default=True)
+
     template = 'mako:tw2.livewidgets.templates.livetable'
     child = RowLayout
 
