@@ -1,5 +1,7 @@
-<a class="${w.widget_class} ${w.css_class % w.data}" title="${w.label % w.data}"
-   href="${w.action % w.data}" rel="#overlay">
+<a class="${w.widget_class} ${w.overlay and 'overlay' or ''} ${w.css_class % w.data}"
+   title="${w.label % w.data}"
+   href="${w.action % w.data}"
+   ${w.overlay and 'rel="#overlay"' or ''}>
     % for c in w.children:
         ${c.display() | n }
     % endfor

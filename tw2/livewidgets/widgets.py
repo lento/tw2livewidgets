@@ -131,7 +131,7 @@ class Link(LiveCompoundWidget):
     widget_class = 'lw_link'
 
 class Button(LiveCompoundWidget):
-    """An overlay button widget
+    """An button widget
 
     Button is a compound widget, and can contain other widgets like ``Text``,
     ``Image`` or ``Icon``
@@ -141,8 +141,10 @@ class Button(LiveCompoundWidget):
     action = twc.Param('A formatting string the will be expanded with the '
         'widget\'s ItemLayout value as a dictionary and used as "href" '
         'attribute', default='')
+    overlay = twc.Param('Whether the button target should open in an overlay',
+        default=False)
 
-    widget_class = 'lw_button overlay'
+    widget_class = 'lw_button'
 
 
 class Text(LiveWidget):
