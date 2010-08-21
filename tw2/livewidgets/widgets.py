@@ -46,8 +46,9 @@ class LiveWidget(twc.Widget):
     label = twc.Param('Tooltip text', default='')
     update_condition = twc.Param('Javascript condition used to filter updates',
         default='true')
-    css_class = twc.Param('CSS class', default='')
+    css_class = twc.Param('Custom CSS class', default='')
     show_header = twc.Param('Show widget id in headers', default=True)
+    widgets_class = twc.Variable('Base CSS class for the widget', default='')
     data = twc.Variable('A dictionary used to expand formatting strings in '
         'templates', default = {})
 
@@ -131,6 +132,7 @@ class Box(LiveCompoundWidget):
     template = 'mako:tw2.livewidgets.templates.box'
     maker_template = 'mako:tw2.livewidgets.templates.box_maker'
 
+    widget_class = 'lw_box'
 
 class Link(LiveCompoundWidget):
     """A link widget
@@ -144,6 +146,7 @@ class Link(LiveCompoundWidget):
         'widget\'s ItemLayout value as a dictionary and used as "href" '
         'attribute', default='')
 
+    widget_class = 'lw_link'
 
 class Button(LiveCompoundWidget):
     """An overlay button widget
@@ -157,6 +160,8 @@ class Button(LiveCompoundWidget):
         'widget\'s ItemLayout value as a dictionary and used as "href" '
         'attribute', default='')
 
+    widget_class = 'lw_button overlay'
+
 
 class Text(LiveWidget):
     """A simple text widget"""
@@ -165,6 +170,8 @@ class Text(LiveWidget):
     text = twc.Param('A formatting string the will be expanded with the '
         'widget\'s ItemLayout value as a dictionary, ``None`` defaults to the '
         'widget\'s value', default=None)
+
+    widget_class = 'lw_text'
 
     def prepare(self):
         super(Text, self).prepare()
@@ -181,6 +188,8 @@ class Image(LiveWidget):
         'widget\'s ItemLayout value as a dictionary, ``None`` defaults to the '
         'widget\'s value', default=None)
 
+    widget_class = 'lw_image'
+
     def prepare(self):
         super(Image, self).prepare()
 
@@ -193,6 +202,8 @@ class Icon(LiveWidget):
     template = 'mako:tw2.livewidgets.templates.icon'
     maker_template = 'mako:tw2.livewidgets.templates.icon_maker'
     icon_class = twc.Param('The css class identifying this icon', default='')
+
+    widget_class = 'lw_icon'
 
 
 # Layouts
@@ -235,7 +246,7 @@ class LiveList(LiveContainer):
     template = 'mako:tw2.livewidgets.templates.livelist'
     child = ListItemLayout
 
-    container_class = 'livelist'
+    container_class = 'lw_livelist'
 
 
 class LiveTable(LiveContainer):
@@ -245,7 +256,7 @@ class LiveTable(LiveContainer):
     template = 'mako:tw2.livewidgets.templates.livetable'
     child = RowLayout
 
-    container_class = 'livetable'
+    container_class = 'lw_livetable'
 
 
 # DEBUG stuff

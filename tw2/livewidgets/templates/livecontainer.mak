@@ -8,7 +8,8 @@ ${self.body()}
             lw.widgets["${w.compound_id}"].field_makers.push(
                 {"css_class": "${field.css_class}",
                  "condition": function(data) {return (${field.update_condition | n});},
-                 "maker": ${field.maker().replace('\n', '') | n},
+##                 "maker": ${field.maker().replace('\n', '') | n},
+                 "maker": ${field.maker() | n},
                 });
         % endfor
     });
