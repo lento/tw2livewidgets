@@ -22,21 +22,6 @@
 
 import tw2.core as twc
 
-# utils
-def get_data(widget):
-    parent = widget.parent
-    if parent:
-        if isinstance(parent, ItemLayout) and hasattr(parent, 'value'):
-            if isinstance(parent.value, dict):
-                return parent.value
-            else:
-                return getattr(parent.value, '__dict__', {})
-        else:
-            return getattr(parent, 'data', {})
-    else:
-        return {}
-
-
 # Widgets
 class LiveWidget(twc.Widget):
     """Base class for LiveWidgets"""
@@ -51,12 +36,6 @@ class LiveWidget(twc.Widget):
     widgets_class = twc.Variable('Base CSS class for the widget', default='')
     data = twc.Variable('A dictionary used to expand formatting strings in '
         'templates', default = {})
-
-    def prepare(self):
-        super(LiveWidget, self).prepare()
-
-        # get the ItemLayout value as a dictionary to use in string formatting
-        self.data = get_data(self)
 
     @twc.util.class_or_instance
     def maker(self, cls, displays_on=None, **kw):
@@ -106,7 +85,6 @@ class LiveCompoundWidget(LiveWidget, twc.CompoundWidget):
 
     def prepare(self):
         # extend data with subelements
-        self.data = get_data(self)
         newdata = {}
         if self.key in self.data:
             if isinstance(self.data[self.key], dict):
@@ -117,9 +95,13 @@ class LiveCompoundWidget(LiveWidget, twc.CompoundWidget):
                     newdata['%s_%s' % (self.key, k)] = v
         self.data.update(newdata)
 
-        # call CompoundWidget.prepare() to prepare children. We do this after
-        # extending "data" so children will get the new extended dictionary
-        # when calling "get_data()"
+        # prepare data for children
+        for c in self.children:
+            c.data = self.data
+
+        # we call super().prepare() after updating children data so if one of
+        # our children is a LiveCompoundWidget, it can propagate it to its
+        # own children
         super(LiveCompoundWidget, self).prepare()
 
 
@@ -211,11 +193,28 @@ class ItemLayout(twc.CompoundWidget):
     """Base class for LiveWidget layouts"""
 
     def prepare(self):
-        super(ItemLayout, self).prepare()
-
         # set item_id
         self.item_id = '%s-%s' % (getattr(self.parent, 'compound_id', None),
                                                 getattr(self.value, 'id', None))
+
+        # extract a dictionary from value
+        if isinstance(self.value, dict):
+            self.data = self.value
+        else:
+            self.data = getattr(self.value, '__dict__', {})
+
+        # extend data with parent's extra_data
+        if self.parent and hasattr(self.parent, 'extra_data'):
+            self.data.update(self.parent.extra_data)
+
+        # prepare data for children
+        for c in self.children:
+            c.data = self.data
+
+        # we call super().prepare() after updating children data so if one of
+        # our children is a LiveCompoundWidget, it can propagate it to its
+        # own children
+        super(ItemLayout, self).prepare()
 
 
 class ListItemLayout(ItemLayout):
@@ -233,6 +232,8 @@ class LiveContainer(twc.RepeatingWidget):
     """Base class for LiveWdigets containers"""
     container_class = twc.Param('CSS class for the container element',
         default='')
+    extra_data = twc.Param('Additional data that will be appended to each'
+        'items\'s data', default={})
     children = twc.Required
 
     resources = [
