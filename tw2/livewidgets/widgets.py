@@ -203,6 +203,8 @@ class ItemLayout(twc.CompoundWidget):
         # extract a dictionary from value
         if isinstance(self.value, dict):
             self.data = self.value
+        elif hasattr(self.value, '__json__'):
+            self.data = self.value.__json__()
         else:
             self.data = getattr(self.value, '__dict__', {})
 
