@@ -17,21 +17,23 @@
  * Contributor(s): 
  */
 
-/* jQuery utils */
-$.fn.showUpdates = function(callback) {
-    return this.each(function() {
-        $(this).addClass('updated', "slow", function() {
-            $(this).removeClass("updated", "slow", function() {
+/* livewidgets namespace */
+if (typeof(lw)=='undefined') {
+    lw = new(Object);
+    lw.widgets = new(Object);
+
+    /* utilities */
+    lw.showUpdates = function(elem, callback) {
+        $(elem).addClass('updated', "slow", function() {
+            $(elem).removeClass("updated", "slow", function() {
                 if (typeof(callback) != 'undefined')
                     callback();
             });
         });
-    });
-}
+    }
 
-$.fn.activateOverlays = function() {
-    return this.each(function() {
-        $(this).overlay({
+    lw.activateOverlays = function(elem) {
+        $(elem).overlay({
             onBeforeLoad: function(event) { 
                 trigger = this.getTrigger();
                 target = trigger.attr("href");
@@ -42,13 +44,7 @@ $.fn.activateOverlays = function() {
                 color: '#333'
             }
         });
-    });
-}
-
-/* livewidgets namespace */
-if (typeof(lw)=='undefined') {
-    lw = new(Object);
-    lw.widgets = new(Object);
+    }
 
     /* Common */
     lw.content_maker = function(widget_id, item, extra_data) {

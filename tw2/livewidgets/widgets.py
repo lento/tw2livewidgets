@@ -243,7 +243,7 @@ class LiveContainer(twc.RepeatingWidget):
 
     resources = [
         twc.JSLink(modname=__name__, filename='static/livewidgets.js'),
-        twc.JSLink(modname=__name__, filename='static/jquery.js'),
+#        twc.JSLink(modname=__name__, filename='static/jquery.js'),
     ]
 
 
