@@ -1,3 +1,3 @@
-function(data, id) {
+function(data) {
     return '';
 }

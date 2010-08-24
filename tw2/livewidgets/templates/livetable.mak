@@ -23,7 +23,7 @@
 ##    });
 </script>
 
-<table id="${w.compound_id}" class="${w.container_class or ''}">
+<table>
     <thead class="${not w.show_headers and 'hidden' or ''}">
         <tr>
             % for field in w.child.children:

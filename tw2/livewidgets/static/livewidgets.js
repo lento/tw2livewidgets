@@ -47,22 +47,34 @@ if (typeof(lw)=='undefined') {
     }
 
     /* Common */
-    lw.content_maker = function(widget_id, item, extra_data) {
-        var field_makers = lw.widgets[widget_id].field_makers;
-        var content = "";
-        
-        if (field_makers != null && typeof(field_makers) != "undefined") {
-            $.each(field_makers, function() {
-                if (this.condition(item)) {
-                    var css_class = this.css_class;
-                    var field_maker = this.maker;
-                    var data = item;
-                    $.extend(data, extra_data);
-                    content += field_maker(data);
+    lw.render_content = function(widget_id, item, extra_data) {
+        var layout_maker = lw.widgets[widget_id].layout_maker;
+        var data = item;
+        $.extend(data, extra_data);
+        return layout_maker(data);
+    }
+
+    lw.update = function(update_topic, item, show_update, extra_data) {
+        $('.update_on_' + update_topic).each(function(i, container) {
+            $('.item-' + item.id, $(container)).each(function(i, element) {
+                $(element).html(lw.render_content(container.id, item, extra_data));
+                if (show_update) {
+                    lw.showUpdates(element);
                 }
+                lw.activateOverlays($(".overlay", element));
             });
-        };
-        return content;
+        });
+    }
+
+    lw.delete = function(update_topic, item, show_update, extra_data) {
+        $('.update_on_' + update_topic).each(function(i, container) {
+            $('.item-' + item.id, $(container)).each(function(i, element) {
+                if (show_update)
+                    lw.showUpdates(element, function() {$(element).remove()});
+                else
+                    $(element).remove();
+            });
+        });
     }
 }
 
