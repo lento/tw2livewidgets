@@ -5,6 +5,7 @@
 <script type="text/javascript">
     $(function() {
         lw.widgets["${w.compound_id}"] = new(Object);
+        lw.widgets["${w.compound_id}"].append_selector = "${w.child.append_selector}";
         lw.widgets["${w.compound_id}"].layout_maker = ${w.child.maker() | n};
     });
 </script>

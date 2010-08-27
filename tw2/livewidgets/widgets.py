@@ -200,6 +200,8 @@ class ItemLayout(twc.CompoundWidget):
     maker_template = twc.Param('A mako template rendering a javascript function'
         ' with prototype: ``function(data){}`` that returns the HTML for this '
         'layout', default='mako:tw2.livewidgets.templates.default_maker')
+    append_selector = twc.Param('A jQuery selector that will be used to '
+        'determine where to append new items', default='')
 
     def prepare(self):
         # set item_id
@@ -233,12 +235,14 @@ class ListItemLayout(ItemLayout):
     """A compound widget that wraps its children in a <li> element"""
     template = 'mako:tw2.livewidgets.templates.list_item_layout'
     maker_template = 'mako:tw2.livewidgets.templates.list_item_layout_maker'
+    append_selector = 'ul'
 
 
 class RowLayout(ItemLayout):
     """A compound widget that wraps its children in a <tr> element"""
     template = 'mako:tw2.livewidgets.templates.row_layout'
     maker_template = 'mako:tw2.livewidgets.templates.row_layout_maker'
+    append_selector = 'table tbody'
 
 
 # Containers

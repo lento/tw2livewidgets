@@ -24,8 +24,8 @@ if (typeof(lw)=='undefined') {
 
     /* utilities */
     lw.showUpdates = function(elem, callback) {
-        $(elem).addClass('updated', "slow", function() {
-            $(elem).removeClass("updated", "slow", function() {
+        $(elem).addClass('updated', 1500, function() {
+            $(elem).removeClass("updated", 1500, function() {
                 if (typeof(callback) != 'undefined')
                     callback();
             });
@@ -40,14 +40,24 @@ if (typeof(lw)=='undefined') {
         return layout_maker(data);
     }
 
+    lw.add = function(update_topic, item, show_update, extra_data) {
+        $('.update_on_' + update_topic).each(function(i, container) {
+            $(lw.widgets[container.id].append_selector, $(container))
+                .append(lw.render_content(container.id, item, extra_data));
+            if (show_update) {
+                lw.showUpdates($('.item-' + item.id, $(container)));
+            }
+        });
+    }
+
     lw.update = function(update_topic, item, show_update, extra_data) {
         $('.update_on_' + update_topic).each(function(i, container) {
             $('.item-' + item.id, $(container)).each(function(i, element) {
-                $(element).html(lw.render_content(container.id, item, extra_data));
-                if (show_update) {
-                    lw.showUpdates(element);
-                }
+                $(element).replaceWith(lw.render_content(container.id, item, extra_data));
             });
+            if (show_update) {
+                lw.showUpdates($('.item-' + item.id, $(container)));
+            }
         });
     }
 
