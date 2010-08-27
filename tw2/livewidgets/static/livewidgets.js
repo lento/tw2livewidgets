@@ -32,20 +32,6 @@ if (typeof(lw)=='undefined') {
         });
     }
 
-    lw.activateOverlays = function(elem) {
-        $(elem).overlay({
-            onBeforeLoad: function(event) { 
-                trigger = this.getTrigger();
-                target = trigger.attr("href");
-                iframe = $("#overlay iframe")[0];
-                iframe.src = target
-            },
-            expose: {
-                color: '#333'
-            }
-        });
-    }
-
     /* Common */
     lw.render_content = function(widget_id, item, extra_data) {
         var layout_maker = lw.widgets[widget_id].layout_maker;
@@ -61,7 +47,6 @@ if (typeof(lw)=='undefined') {
                 if (show_update) {
                     lw.showUpdates(element);
                 }
-                lw.activateOverlays($(".overlay", element));
             });
         });
     }

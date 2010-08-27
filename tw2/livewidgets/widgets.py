@@ -144,8 +144,9 @@ class Button(LiveCompoundWidget):
     action = twc.Param('A formatting string the will be expanded with the '
         'widget\'s ItemLayout value as a dictionary and used as "href" '
         'attribute', default='')
-    overlay = twc.Param('Whether the button target should open in an overlay',
-        default=False)
+    dialog = twc.Param('Whether the button target should open in a dialog '
+        '(the button will have a "dialog" css class, creating the dialog is '
+        'left to the application)', default=False)
 
     widget_class = 'lw_button'
 
