@@ -8,7 +8,7 @@ function(data) {
     % endif
     title = $.sprintf('${w.help_text | n}', data);
     var css_class = $.sprintf('${w.css_class | n}', data);
-    var field = '<img src="' + src + '" class="${w.widget_class} ' + field_class + '"  title="' + title + '"></img>';
+    var field = '<img src="' + src + '" class="${w.widget_class} ' + css_class + '"  title="' + title + '"></img>';
     return field;
 }
 
