@@ -21,54 +21,68 @@
 if (typeof(lw)=='undefined') {
     lw = new(Object);
     lw.widgets = new(Object);
-
-    /* utilities */
-    lw.showUpdates = function(elem, callback) {
-        $(elem).addClass('updated', 1500, function() {
-            $(elem).removeClass("updated", 1500, function() {
-                if (typeof(callback) != 'undefined')
-                    callback();
-            });
-        });
-    }
+    lw.ANISPEED = 1250;
 
     /* Common */
-    lw.render_content = function(widget_id, item, extra_data) {
+    lw.render_content = function(widget_id, data) {
         var layout_maker = lw.widgets[widget_id].layout_maker;
-        var data = item;
-        $.extend(data, extra_data);
         return layout_maker(data);
     }
 
-    lw.add = function(update_topic, item, show_update, extra_data) {
-        $('.update_on_' + update_topic).each(function(i, container) {
-            $(lw.widgets[container.id].append_selector, $(container))
-                .append(lw.render_content(container.id, item, extra_data));
-            if (show_update) {
-                lw.showUpdates($('.item-' + item.id, $(container)));
+    lw.added = function(container, data, show_updates) {
+        $(lw.widgets[container.id].append_selector, $(container)).each(function(i, parent) {
+            var new_element = $(lw.render_content(container.id, data));
+            new_element.addClass('updated').appendTo($(parent))
+                .fadeIn(lw.ANISPEED, function() {
+                    new_element.removeClass('updated', lw.ANISPEED);
+                });
+        });
+    }
+
+    lw.updated = function(container, data, show_updates) {
+        $('.item-' + data.id, $(container)).each(function(i, element) {
+            $(element).replaceWith(lw.render_content(container.id, data));
+            if (show_updates) {
+                $('.item-' + data.id, $(container)).addClass('updated', lw.ANISPEED, function() {
+                    $('.item-' + data.id, $(container)).removeClass('updated', lw.ANISPEED);
+                });
             }
         });
     }
 
-    lw.update = function(update_topic, item, show_update, extra_data) {
-        $('.update_on_' + update_topic).each(function(i, container) {
-            $('.item-' + item.id, $(container)).each(function(i, element) {
-                $(element).replaceWith(lw.render_content(container.id, item, extra_data));
-            });
-            if (show_update) {
-                lw.showUpdates($('.item-' + item.id, $(container)));
+    lw.deleted = function(container, data, show_updates) {
+        $('.item-' + data.id, $(container)).each(function(i, element) {
+            if (show_updates) {
+                $(element).addClass('updated', lw.ANISPEED, function() {
+                    $('.item-' + data.id, $(container)).fadeOut(lw.ANISPEED, function() {
+                        $(element).remove();
+                    });
+                });
             }
         });
     }
 
-    lw.delete = function(update_topic, item, show_update, extra_data) {
-        $('.update_on_' + update_topic).each(function(i, container) {
-            $('.item-' + item.id, $(container)).each(function(i, element) {
-                if (show_update)
-                    lw.showUpdates(element, function() {$(element).remove()});
-                else
-                    $(element).remove();
-            });
+    /* lwWidget prototype */
+    lw.Widget = function() {
+        this.layout_maker = function() {};
+        this.append_selector = '';
+        this.callbacks = {
+            'added': lw.added,
+            'updated': lw.updated,
+            'deleted': lw.deleted,
+        }
+    }
+
+    /* API */
+    lw.update = function(topic, type, item, show_updates, extra_data, filter) {
+        filter = (typeof(filter)!='undefined' && filter) ? ' update_filter_' + filter : '';
+        console.log('lw.update()', topic, type, item, show_updates, extra_data, filter);
+        $('.update_on_' + topic + filter).each(function(i, container) {
+            var data = item;
+            $.extend(data, extra_data);
+            if (type in lw.widgets[container.id].callbacks) {
+                lw.widgets[container.id].callbacks[type](container, data, show_updates);
+            }
         });
     }
 }

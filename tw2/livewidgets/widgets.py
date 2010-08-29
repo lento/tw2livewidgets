@@ -254,6 +254,9 @@ class LiveContainer(twc.RepeatingWidget):
         'items\'s data', default={})
     update_topic = twc.Param('The topic this container is listening to for '
         'updates', default=None)
+    update_filter = twc.Param('A class used to filter updates', default=None)
+    callbacks = twc.Param('A javascript object providing custom callbacks for '
+        'update events', default='{}')
     children = twc.Required
 
     resources = [
