@@ -75,8 +75,7 @@ if (typeof(lw)=='undefined') {
 
     /* API */
     lw.update = function(topic, type, item, show_updates, extra_data, filter) {
-        filter = (typeof(filter)!='undefined' && filter) ? ' update_filter_' + filter : '';
-        console.log('lw.update()', topic, type, item, show_updates, extra_data, filter);
+        filter = (typeof(filter)!='undefined' && filter) ? '.update_filter_' + filter : '';
         $('.update_on_' + topic + filter).each(function(i, container) {
             var data = item;
             $.extend(data, extra_data);
